@@ -412,7 +412,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── FORMULÁRIO ───────────────────────────────────────────────────────────────
-st.markdown('<div class="form-card">', unsafe_allow_html=True)
 st.markdown('<div class="form-section-title">👤 Suas informações</div>', unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
@@ -438,7 +437,6 @@ with col_w1:
 with col_w2:
     st.caption(f"🔤 **{chars}** caracteres")
 
-st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown("""
 <div class="dica-box">
@@ -540,88 +538,53 @@ Responda OBRIGATORIAMENTE apenas com um objeto JSON válido, sem nenhum texto an
 
                 # ── COMPETÊNCIAS COM BARRAS VISUAIS ──────────────────────────
                 competencias = resultado.get("competencias", [])
-                st.markdown('<div class="progress-wrap"><div class="prog-title">📊 Desempenho por Competência</div>', unsafe_allow_html=True)
-
+                comps_html = ""
                 for comp in competencias:
                     n = comp.get("nota", 0)
                     pct_comp = int((n / 200) * 100)
-
                     if n >= 160:
-                        cor_bar = "#22c55e"
-                        cor_badge_bg = "#f0fdf4"
-                        cor_badge_txt = "#166534"
+                        cor_bar, cor_badge_bg, cor_badge_txt = "#22c55e", "#f0fdf4", "#166534"
                     elif n >= 100:
-                        cor_bar = "#f59e0b"
-                        cor_badge_bg = "#fffbeb"
-                        cor_badge_txt = "#92400e"
+                        cor_bar, cor_badge_bg, cor_badge_txt = "#f59e0b", "#fffbeb", "#92400e"
                     else:
-                        cor_bar = "#ef4444"
-                        cor_badge_bg = "#fef2f2"
-                        cor_badge_txt = "#991b1b"
-
-                    st.markdown(f"""
+                        cor_bar, cor_badge_bg, cor_badge_txt = "#ef4444", "#fef2f2", "#991b1b"
+                    comps_html += f"""
                     <div class="comp-row">
                         <div class="comp-header">
                             <span class="comp-name">C{comp['numero']} — {comp['nome']}</span>
-                            <span class="comp-score-badge" style="background:{cor_badge_bg}; color:{cor_badge_txt}">
-                                {n}/200
-                            </span>
+                            <span class="comp-score-badge" style="background:{cor_badge_bg}; color:{cor_badge_txt}">{n}/200</span>
                         </div>
-                        <div class="comp-bar-bg">
-                            <div class="comp-bar-fill" style="width:{pct_comp}%; background:{cor_bar};"></div>
-                        </div>
+                        <div class="comp-bar-bg"><div class="comp-bar-fill" style="width:{pct_comp}%; background:{cor_bar};"></div></div>
                         <div class="comp-comment">{comp['comentario']}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-                st.markdown('</div>', unsafe_allow_html=True)
+                    </div>"""
+                st.markdown(f'<div class="progress-wrap"><div class="prog-title">📊 Desempenho por Competência</div>{comps_html}</div>', unsafe_allow_html=True)
 
                 st.markdown("<br>", unsafe_allow_html=True)
 
                 # ── 4 CARDS DE ANÁLISE ───────────────────────────────────────
+                erros_ort  = resultado.get("erros_ortografia", [])
+                erros_pont = resultado.get("erros_pontuacao", [])
+                pontos     = resultado.get("pontos_positivos", [])
+                sugestoes  = resultado.get("sugestoes_melhoria", [])
+
+                itens_ort  = "".join(f'<div class="item-pill pill-erro-ort">✕ {e}</div>' for e in erros_ort) if erros_ort else '<div class="empty-state">✅ Nenhum erro encontrado!</div>'
+                itens_pont = "".join(f'<div class="item-pill pill-erro-pont">✕ {e}</div>' for e in erros_pont) if erros_pont else '<div class="empty-state">✅ Nenhum erro encontrado!</div>'
+                itens_pos  = "".join(f'<div class="item-pill pill-positivo">✓ {p}</div>' for p in pontos)
+                itens_sug  = "".join(f'<div class="item-pill pill-sugestao">→ {s}</div>' for s in sugestoes)
+
                 col_a, col_b = st.columns(2)
-
                 with col_a:
-                    erros_ort = resultado.get("erros_ortografia", [])
-                    st.markdown('<div class="analysis-card">', unsafe_allow_html=True)
-                    st.markdown('<div class="analysis-card-title" style="color:#dc2626">🔴 Erros de Ortografia</div>', unsafe_allow_html=True)
-                    if erros_ort:
-                        for e in erros_ort:
-                            st.markdown(f'<div class="item-pill pill-erro-ort">✕ {e}</div>', unsafe_allow_html=True)
-                    else:
-                        st.markdown('<div class="empty-state">✅ Nenhum erro encontrado!</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-
+                    st.markdown(f'<div class="analysis-card"><div class="analysis-card-title" style="color:#dc2626">🔴 Erros de Ortografia</div>{itens_ort}</div>', unsafe_allow_html=True)
                 with col_b:
-                    erros_pont = resultado.get("erros_pontuacao", [])
-                    st.markdown('<div class="analysis-card">', unsafe_allow_html=True)
-                    st.markdown('<div class="analysis-card-title" style="color:#ea580c">🟠 Erros de Pontuação</div>', unsafe_allow_html=True)
-                    if erros_pont:
-                        for e in erros_pont:
-                            st.markdown(f'<div class="item-pill pill-erro-pont">✕ {e}</div>', unsafe_allow_html=True)
-                    else:
-                        st.markdown('<div class="empty-state">✅ Nenhum erro encontrado!</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="analysis-card"><div class="analysis-card-title" style="color:#ea580c">🟠 Erros de Pontuação</div>{itens_pont}</div>', unsafe_allow_html=True)
 
                 st.markdown("<br>", unsafe_allow_html=True)
 
                 col_c, col_d = st.columns(2)
-
                 with col_c:
-                    pontos = resultado.get("pontos_positivos", [])
-                    st.markdown('<div class="analysis-card">', unsafe_allow_html=True)
-                    st.markdown('<div class="analysis-card-title" style="color:#16a34a">✅ Pontos Positivos</div>', unsafe_allow_html=True)
-                    for p in pontos:
-                        st.markdown(f'<div class="item-pill pill-positivo">✓ {p}</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-
+                    st.markdown(f'<div class="analysis-card"><div class="analysis-card-title" style="color:#16a34a">✅ Pontos Positivos</div>{itens_pos}</div>', unsafe_allow_html=True)
                 with col_d:
-                    sugestoes = resultado.get("sugestoes_melhoria", [])
-                    st.markdown('<div class="analysis-card">', unsafe_allow_html=True)
-                    st.markdown('<div class="analysis-card-title" style="color:#2563eb">💡 Sugestões de Melhoria</div>', unsafe_allow_html=True)
-                    for s in sugestoes:
-                        st.markdown(f'<div class="item-pill pill-sugestao">→ {s}</div>', unsafe_allow_html=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    st.markdown(f'<div class="analysis-card"><div class="analysis-card-title" style="color:#2563eb">💡 Sugestões de Melhoria</div>{itens_sug}</div>', unsafe_allow_html=True)
 
                 st.markdown("<br>", unsafe_allow_html=True)
 
