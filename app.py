@@ -1,5 +1,6 @@
 import streamlit as st
-import anthropic
+from groq import Groq
+import json
 import re
 
 # ── Configuração da página ──────────────────────────────────────────────────
@@ -78,7 +79,6 @@ h1, h2, h3 {
 .competencia-score {
     font-size: 1.4rem;
     font-weight: 700;
-    color: #f0c040;
 }
 
 .stTextArea textarea {
@@ -141,7 +141,7 @@ if st.button("🔍 Corrigir minha redação"):
     else:
         with st.spinner(f"Analisando sua redação, {nome.split()[0]}... ✨"):
 
-            prompt = f"""Você é um corretor especialista em redações do ENEM, com profundo conhecimento das 5 competências avaliadas. 
+            prompt = f"""Você é um corretor especialista em redações do ENEM, com profundo conhecimento das 5 competências avaliadas.
 Corrija a redação abaixo com rigor e didática, exatamente como faria um corretor oficial do ENEM.
 
 Nome do aluno: {nome}
@@ -151,7 +151,7 @@ Tema: {tema if tema else "Não informado"}
 {redacao}
 --- FIM ---
 
-Responda OBRIGATORIAMENTE neste formato JSON (sem markdown, sem explicações fora do JSON):
+Responda OBRIGATORIAMENTE apenas com um objeto JSON válido, sem nenhum texto antes ou depois, sem markdown, sem blocos de código:
 
 {{
   "nota_final": <número de 0 a 1000, múltiplo de 40>,
@@ -170,19 +170,30 @@ Responda OBRIGATORIAMENTE neste formato JSON (sem markdown, sem explicações fo
 }}"""
 
             try:
-                client = anthropic.Anthropic()
-                message = client.messages.create(
-                    model="claude-sonnet-4-20250514",
+                # ── Conexão com o Groq ──────────────────────────────────────
+                client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+
+                response = client.chat.completions.create(
+                    model="llama3-70b-8192",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "Você é um corretor especialista em redações do ENEM. Responda sempre e somente com JSON válido, sem texto adicional."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    temperature=0.3,
                     max_tokens=2000,
-                    messages=[{"role": "user", "content": prompt}],
                 )
 
-                raw = message.content[0].text.strip()
-                # Remove possíveis marcadores de código
+                raw = response.choices[0].message.content.strip()
                 raw = re.sub(r"^```json\s*", "", raw)
+                raw = re.sub(r"^```\s*", "", raw)
                 raw = re.sub(r"```$", "", raw).strip()
 
-                import json
                 resultado = json.loads(raw)
 
                 # ── Nota Final ──────────────────────────────────────────────
@@ -273,6 +284,6 @@ Responda OBRIGATORIAMENTE neste formato JSON (sem markdown, sem explicações fo
 # ── Rodapé ──────────────────────────────────────────────────────────────────
 st.markdown("---")
 st.markdown(
-    "<div style='text-align:center; color:#aaa; font-size:0.82rem'>CorrigeAí · Powered by Claude AI · Apenas para fins educacionais</div>",
+    "<div style='text-align:center; color:#aaa; font-size:0.82rem'>CorrigeAí · Powered by Groq AI · Apenas para fins educacionais</div>",
     unsafe_allow_html=True,
 )
