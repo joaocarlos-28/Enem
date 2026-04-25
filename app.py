@@ -608,4 +608,4 @@ Responda OBRIGATORIAMENTE apenas com um objeto JSON válido, sem nenhum texto an
                 col_c, col_d = st.columns(2)
 
                 with col_c:
-                    pontos = resultado.get("pontos_positivos", 
+                    pontos = resultado.get("pontos_positivos")
