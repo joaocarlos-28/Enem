@@ -174,7 +174,7 @@ Responda OBRIGATORIAMENTE apenas com um objeto JSON válido, sem nenhum texto an
                 client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
                 response = client.chat.completions.create(
-                    model="llama3-70b-8192",
+                    model="llama-3.3-70b-versatile",  # Modelo atual e gratuito do Groq
                     messages=[
                         {
                             "role": "system",
